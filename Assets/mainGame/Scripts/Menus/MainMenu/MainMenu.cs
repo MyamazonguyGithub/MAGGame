@@ -34,17 +34,18 @@ public class MainMenu : MonoBehaviour
     public TextMeshProUGUI notifyCardsTxt;
 
     // daily gift
-    GameObject dailyGiftCanvas;
+    public GameObject dailyGiftCanvas;
     DailyGift dailyGift;
     GameObject dailyGiftsNotification;
 
     // ranking 
-    GameObject rankingCanvas;
+    public GameObject rankingCanvas;
 
     // profile
-    GameObject profileCanvas;
+    public GameObject profileCanvas;
 
     public Fighter fighterInstance;
+
     void Awake()
     {
 
@@ -54,25 +55,9 @@ public class MainMenu : MonoBehaviour
         //If Main Menu theme is already playing keep playing it
         if (!audioSource.isPlaying) audioSource.Play();
 
-        settings = GameObject.Find("Settings");
-        deleteConfirmation = GameObject.Find("Delete_Confirmation");
-        aboutPopup = GameObject.Find("AboutPopup");
-        dailyGiftCanvas = GameObject.Find("DailyRewardsCanvas");
-        rankingCanvas = GameObject.Find("RankingCanvas");
-        profileCanvas = GameObject.Find("ProfileCanvas");
         dailyGift = dailyGiftCanvas.GetComponent<DailyGift>();
         dailyGiftsNotification = GameObject.Find("DailyGiftsNotification");
-        buttonDelete = GameObject.Find("Button_Delete");
-        buttonAbout = GameObject.Find("Button_About");
-        buttonCredits = GameObject.Find("Button_Credits");
-        buttonCloseConfirmation = GameObject.Find("Button_Close_Confirmation");
-        buttonCloseAbout = GameObject.Find("Button_Close_About");
         lockIcon = GameObject.Find("Battle_Lock").GetComponent<Image>();
-
-        // stats
-        attack = GameObject.Find("Attack_Value").GetComponent<TextMeshProUGUI>();
-        hp = GameObject.Find("Hp_Value").GetComponent<TextMeshProUGUI>();
-        speed = GameObject.Find("Speed_Value").GetComponent<TextMeshProUGUI>();
 
         Fighter player = PlayerUtils.FindInactiveFighter();
         PlayerUtils.FindInactiveFighterGameObject().SetActive(false);

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 using UnityEngine.UI;
+using Photon.Pun;
 
 public class EntryPoint : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class EntryPoint : MonoBehaviour
         tipText = GameObject.Find("TipText").GetComponentInChildren<TextMeshProUGUI>();
 
         ResetBar();
+
+        //PhotonNetwork.ConnectUsingSettings();
     }
 
     private void StartMusic(){
@@ -75,34 +78,43 @@ public class EntryPoint : MonoBehaviour
         bool saveFilesFound = File.Exists(JsonDataManager.getFilePath(JsonDataManager.UserFileName)) &&
             File.Exists(JsonDataManager.getFilePath(JsonDataManager.FighterFileName));
 
-        if (saveFilesFound)
+        if(PhotonNetwork.IsConnected)
         {
-            JsonDataManager.ReadUserFile();
-            JsonDataManager.ReadFighterFile();
+            Debug.LogError("Failed to connect to the server.");
+        }
+        else
+        {
 
-            if(User.Instance.firstTime)
+            if (saveFilesFound)
             {
-                StartCoroutine(SceneManagerScript.instance.FadeOut());
-                yield return new WaitForSeconds(GeneralUtils.GetRealOrSimulationTime(SceneFlag.FADE_DURATION));
-                UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.Combat.ToString());
-            } 
+                JsonDataManager.ReadUserFile();
+                JsonDataManager.ReadFighterFile();
+
+                if (User.Instance.firstTime)
+                {
+                    StartCoroutine(SceneManagerScript.instance.FadeOut());
+                    yield return new WaitForSeconds(GeneralUtils.GetRealOrSimulationTime(SceneFlag.FADE_DURATION));
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.Combat.ToString());
+                }
+                else
+                {
+                    StartCoroutine(SceneManagerScript.instance.FadeOut());
+                    yield return new WaitForSeconds(GeneralUtils.GetRealOrSimulationTime(SceneFlag.FADE_DURATION));
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.MainMenu.ToString());
+                }
+            }
+
             else
             {
                 StartCoroutine(SceneManagerScript.instance.FadeOut());
                 yield return new WaitForSeconds(GeneralUtils.GetRealOrSimulationTime(SceneFlag.FADE_DURATION));
-                UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.MainMenu.ToString());
+                UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.ChooseFirstFighter.ToString());
             }
+
+            Notifications.InitiateCardsUnseen();
+            SceneFlag.sceneName = SceneNames.EntryPoint.ToString();
         }
 
-        else
-        {
-            StartCoroutine(SceneManagerScript.instance.FadeOut());
-            yield return new WaitForSeconds(GeneralUtils.GetRealOrSimulationTime(SceneFlag.FADE_DURATION));
-            UnityEngine.SceneManagement.SceneManager.LoadScene(SceneNames.ChooseFirstFighter.ToString());
-        }
-
-        Notifications.InitiateCardsUnseen();
-        SceneFlag.sceneName = SceneNames.EntryPoint.ToString();
     }
 
     private void ResetBar()

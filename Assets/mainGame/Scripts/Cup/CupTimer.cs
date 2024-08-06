@@ -41,22 +41,15 @@ public class CupTimer : MonoBehaviour
         SetupCup();
 
 
-        buttonBypass.GetComponent<Button>().onClick.AddListener(BypassCupTimer);
+        //buttonBypass.GetComponent<Button>().onClick.AddListener(BypassCupTimer);
 
     }
 
     private void SetupUI()
     {
-        buttonCup = GameObject.Find("Button_Cup");
-        cupIcon = GameObject.Find("Icon_Cup").GetComponent<Image>();
-        textCup = GameObject.Find("Text_Cup").GetComponent<TextMeshProUGUI>();
-        textCupDisabled = GameObject.Find("Text_Cup_Disabled").GetComponent<TextMeshProUGUI>();
-        timerGO = GameObject.Find("Icon_Daily_Time_Cup");
-        textTimer = GameObject.Find("Text_Daily_Time").GetComponent<TextMeshProUGUI>();
-        lockIcon = GameObject.Find("Cup_Lock").GetComponent<Image>();
 
 
-        buttonBypass = GameObject.Find("Button_Bypass");
+        //buttonBypass = GameObject.Find("Button_Bypass");
     }
 
     private void Update()
