@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "358150520015",
+    "firebase_url": "https://newmag-4bd24-default-rtdb.firebaseio.com",
+    "project_id": "newmag-4bd24",
+    "storage_bucket": "newmag-4bd24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358150520015:android:d0b8a4acdbfbc9676dcbba",
+        "android_client_info": {
+          "package_name": "com.MAG.newMAG"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpUaVF1g924RQTP2T50aFzDfAoEIloRiU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
