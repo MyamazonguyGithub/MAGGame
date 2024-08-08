@@ -46,7 +46,7 @@ public class DatabaseConnection : MonoBehaviour
 
     private void RetrieveData()
     {
-        string query = "SELECT * FROM skill_category;";
+        //string query = "SELECT * FROM skill_category;";
         //MySqlCommand cmd = new MySqlCommand(query, connection);
         //MySqlDataReader dataReader = cmd.ExecuteReader();
         //while (dataReader.Read())

@@ -78,7 +78,7 @@ public class EntryPoint : MonoBehaviour
         bool saveFilesFound = File.Exists(JsonDataManager.getFilePath(JsonDataManager.UserFileName)) &&
             File.Exists(JsonDataManager.getFilePath(JsonDataManager.FighterFileName));
 
-        if(PhotonNetwork.IsConnected)
+        if(!PhotonNetwork.IsConnected)
         {
             Debug.LogError("Failed to connect to the server.");
         }

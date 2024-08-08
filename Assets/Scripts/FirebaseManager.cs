@@ -8,10 +8,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Photon.Realtime;
 
 namespace Photon.Pun.Demo.Asteroids
 {
-    public class FirebaseManager : MonoBehaviour
+    public class FirebaseManager : MonoBehaviourPunCallbacks
     {
         //Firebase variables
         [Header("Firebase")]
@@ -34,10 +35,6 @@ namespace Photon.Pun.Demo.Asteroids
         public TMP_InputField passwordRegisterField;
         public TMP_InputField passwordRegisterVerifyField;
         public TMP_Text warningRegisterText;
-
-      
-
-
 
         private Dictionary<string, GameObject> roomListEntries;
         private Dictionary<int, GameObject> playerListEntries;
@@ -107,6 +104,44 @@ namespace Photon.Pun.Demo.Asteroids
             //Call the login coroutine passing the email and password
             StartCoroutine(Login(emailLoginField.text, passwordLoginField.text));
         }
+
+        public void GuestLogin()
+        {
+            if(emailLoginField.text == "")
+            {
+                warningLoginText.text = "Please insert your name.";
+            }
+            else
+            {
+                //User = LoginTask.Result.User;
+                //Debug.Log("pangalan: " + LoginTask.Result.User);
+                //Debug.LogFormat("User signed in successfully: {0} ({1})", User.DisplayName, User.Email);
+                warningLoginText.text = "";
+                confirmLoginText.text = "Logged In";
+
+                //yield return new WaitForSeconds(2);
+
+                GameData.IGN = emailLoginField.text;
+                IGN.text = emailLoginField.text;
+                PhotonNetwork.ConnectUsingSettings();
+            }
+            
+        }
+
+        public override void OnDisconnected(DisconnectCause cause)
+        {
+            Debug.LogError("Disconnected from the network: " + cause.ToString());
+        }
+
+        public override void OnConnectedToMaster()
+        {
+            PhotonNetwork.LocalPlayer.NickName = GameData.IGN;
+            IGoToScene("EntryPoint");
+            //Debug.Log("Name: " + User.DisplayName);
+            confirmLoginText.text = "";
+            ClearLoginFeilds();
+            ClearRegisterFeilds();
+        }
         //Function for the register button
         public void RegisterButton()
         {
@@ -122,10 +157,6 @@ namespace Photon.Pun.Demo.Asteroids
             ClearLoginFeilds();
         }
    
-    
-
-  
-
         private IEnumerator Login(string _email, string _password)
         {
             //Call the Firebase auth signin function passing the email and password

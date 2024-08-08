@@ -81,8 +81,8 @@ public class Combat : MonoBehaviour
         GetComponentReferences();
 
         // Generate bot data
-        if (Cup.Instance.isActive && !CombatMode.isSoloqEnabled) MatchMaking.GenerateCupBotData(player, bot);
-        else MatchMaking.GenerateSoloQBotData(player, bot);
+        /*if (Cup.Instance.isActive && !CombatMode.isSoloqEnabled) MatchMaking.GenerateCupBotData(player, bot);
+        else MatchMaking.GenerateSoloQBotData(player, bot);*/
 
         // Set LoadingScreen
         loadingScreen.SetPlayerLoadingScreenData(player);
@@ -558,9 +558,9 @@ public class Combat : MonoBehaviour
             //Profile
             ProfileData.SavePeakElo(User.Instance.elo);
 
-            if (Cup.Instance.isActive && !CombatMode.isSoloqEnabled)
+            if (!CombatMode.isSoloqEnabled)
             {
-                switch (Cup.Instance.round)
+                /*switch (Cup.Instance.round)
                 {
                     case "QUARTERS":
                         cupManager.SimulateQuarters(isPlayerWinner);
@@ -571,16 +571,16 @@ public class Combat : MonoBehaviour
                     case "FINALS":
                         cupManager.SimulateFinals(isPlayerWinner);
                         break;
-                }
+                }*/
 
-                if (!isPlayerWinner)
+                /*if (!isPlayerWinner)
                 {
                     // enable rewards button on cup menu
                     // disable battle button
                     Cup.Instance.isActive = true;
                     Cup.Instance.playerStatus = false;
                     Cup.Instance.SaveCup();
-                }
+                }*/
             }
         }
 

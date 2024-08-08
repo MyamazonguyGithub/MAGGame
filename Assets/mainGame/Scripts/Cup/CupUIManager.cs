@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /* CUP STRUCTURE IDS
@@ -19,38 +21,31 @@ using UnityEngine.UI;
  *    
  * ----------------------------------------------------------
  * 
- * MATCHES STRUCTURE IDS
+ * BLOCK STRUCTURE IDS
  * 
  * QUARTERS     SEMIS       FINAL       SEMIS       QUARTERS
  * 
- *    1           5           7           6            3
+ *    A           E           G           F            C
  *                                              
- *    2                                                4
+ *    B                                                D
  *                                                    
  *    
  * ----------------------------------------------------------
- * 
- * Players gameobject structure
- * 
- * - BG
- *      - mask
- *          - species portrait
- * - nickname
- * - BGFade (when eliminated)
- * 
  */
 
 public class CupUIManager : MonoBehaviour
 {
+    public static CupUIManager Instance;
+
+    [SerializeField] CupFighterContainer[] fighterContainers;
     // UI
     Transform labelContainer;
     Transform playersContainer;
-    List<Transform> participants;
     TextMeshProUGUI roundAnnouncer;
     Button buttonCollectRewards;
 
     // prize
-    Canvas prizeCanvas;
+    public Canvas prizeCanvas;
     GameObject cupGoldAndGems;
     GameObject cupSkills;
     GameObject cupGoldPopup;
@@ -71,6 +66,7 @@ public class CupUIManager : MonoBehaviour
     public GameObject epicSkill;
     public GameObject legendarySkill;
     public GameObject battleBtnContainer;
+    public Button readyButton;
     public Button skillInventory;
     public Button skillMainMenu;
     public Button allSkills;
@@ -92,25 +88,29 @@ public class CupUIManager : MonoBehaviour
 
     private void Awake()
     {
-        SetUpUI();
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+        
+        DontDestroyOnLoad(gameObject);
+
+        SetUpUI(); //get references
         IsTournamentOver();
-        HideCupLabels();
-        GetAllUIPlayers();
-        SetUIBasedOnRound();
-        SetUpButtons();
+        //HideCupLabels();
+        //GetAllUIPlayers();
+        //SetUIBasedOnRound();
+        //SetUpButtons();
 
         // Initial setup
-        cupGoldAndGems.SetActive(false);
+        /*cupGoldAndGems.SetActive(false);
         cupSkills.SetActive(false);
         cupGoldPopup.SetActive(false);
-        cupGemsPopup.SetActive(false);
-        player = PlayerUtils.FindInactiveFighter();
+        cupGemsPopup.SetActive(false);*/
+        //player = PlayerUtils.FindInactiveFighter();
     }
 
     private IEnumerator Start()
     {
-        ShowCupLabel();
-
+        //ShowCupLabel();
         if (SceneFlag.sceneName == SceneNames.Combat.ToString() || SceneFlag.sceneName == SceneNames.LevelUp.ToString())
         {
             StartCoroutine(SceneManagerScript.instance.FadeIn());
@@ -130,188 +130,64 @@ public class CupUIManager : MonoBehaviour
         cupManager = GetComponent<CupManager>();
 
         // collect reward popup
-        prizeCanvas = GameObject.Find("PrizeCanvas").GetComponent<Canvas>();
         cupSkills = GameObject.Find("Popup_Skill");
         cupGoldAndGems = GameObject.Find("Popup_Currencies");
         cupGoldPopup = GameObject.Find("GoldReward");
         cupGemsPopup = GameObject.Find("GemsReward");
-        goldOrGemsTitle = GameObject.Find("Popup_Currencies_Title").GetComponent<TextMeshProUGUI>();
-        goldQuantity = GameObject.Find("Gold_Quantity").GetComponent<TextMeshProUGUI>();
-        gemsQuantity = GameObject.Find("Gems_Quantity").GetComponent<TextMeshProUGUI>();
+        //goldOrGemsTitle = GameObject.Find("Popup_Currencies_Title").GetComponent<TextMeshProUGUI>();
+        //goldQuantity = GameObject.Find("Gold_Quantity").GetComponent<TextMeshProUGUI>();
+        //gemsQuantity = GameObject.Find("Gems_Quantity").GetComponent<TextMeshProUGUI>();
     }
 
-    private void SetUpButtons()
+    public void UpdateCupUI(CupFighter[] cupFighters)
     {
-        buttonCollectRewards.GetComponent<Button>().onClick.AddListener(() => GiveReward(GetRewardType(GetCupRound())));
-    }
-
-    private void GetAllUIPlayers()
-    {
-        participants = new List<Transform>();
-
-        for (int i = 0; i < playersContainer.childCount; i++)
-            participants.Add(playersContainer.GetChild(i));
+        for (int i = 0; i < cupFighters.Length; i++) //The length must be 8
+        {
+            if (cupFighters[i] == null)
+            {
+                fighterContainers[i].tmpFighterName.text = "Empty";
+            }
+            else
+            {
+                fighterContainers[i].tmpFighterName.text = cupFighters[i].fighterName;
+            }
+        }
     }
 
     private void IsTournamentOver()
     {
-        if (Cup.Instance.round == CupDB.CupRounds.END.ToString() || !Cup.Instance.playerStatus)
+        /*if (Cup.Instance.round == CupDB.CupRounds.END.ToString() || !Cup.Instance.playerStatus)
         {
-            battleBtnContainer.SetActive(false);
-            buttonCollectRewards.gameObject.SetActive(true);
+            Debug.Log("Tournament ends.");
+            //battleBtnContainer.SetActive(false);
+            //buttonCollectRewards.gameObject.SetActive(true);
         }
         else
         {
-            battleBtnContainer.SetActive(true);
-            buttonCollectRewards.gameObject.SetActive(false);
-        }
-    }
-
-    private void DisplayPlayerQuarters()
-    {
-        var participantsList = Cup.Instance.participants;
-
-        playersContainer.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = playerHihglight;
-        int counter = 0;
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Quarters"))
-            {
-                player.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().sprite =
-                    GetSpeciePortrait(participantsList[counter].species);
-                player.GetChild(1).GetComponent<TextMeshProUGUI>().text =
-                    participantsList[counter].fighterName;
-
-                counter++;
-            }
-        }
-    }
-
-    private void DisplayPlayerSemis()
-    {
-        int counter = 0;
-        List<CupFighter> _participants = cupManager.GenerateParticipantsBasedOnQuarters();
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Semis"))
-            {
-                player.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().sprite =
-                    GetSpeciePortrait(_participants[counter].species);
-                player.GetChild(1).GetComponent<TextMeshProUGUI>().text =
-                    _participants[counter].fighterName;
-
-                if (_participants[counter].id == "0")
-                    playersContainer.GetChild(8).GetChild(1).GetComponent<TextMeshProUGUI>().color = playerHihglight;
-
-                counter++;
-            }
-        }
-
-        GrayOutLosersQuarters();
-    }
-
-    private void DisplayPlayerFinals(string round)
-    {
-        int counter = 0;
-        List<CupFighter> _participants = cupManager.GenerateParticipantsBasedOnSemis();
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Finals"))
-            {
-                player.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().sprite =
-                    GetSpeciePortrait(_participants[counter].species);
-                player.GetChild(1).GetComponent<TextMeshProUGUI>().text =
-                    _participants[counter].fighterName;
-
-                if (_participants[counter].id == "0")
-                    playersContainer.GetChild(12).GetChild(1).GetComponent<TextMeshProUGUI>().color = playerHihglight;
-
-                counter++;
-            }
-        }
-
-        if (round == "FINALS")
-            GrayOutLosersSemis();
-        if (round == "END")
-            GrayOutLoserFinals();
+            //battleBtnContainer.SetActive(true);
+            //buttonCollectRewards.gameObject.SetActive(false);
+            Debug.Log("Tournament continues.");
+            readyButton.gameObject.SetActive(true);
+        }*/
     }
 
     private void SetUIBasedOnRound()
     {
-        switch (Cup.Instance.round)
+        /*switch (Cup.Instance.round)
         {
             case "QUARTERS":
                 SetUIQuarters();
-                DisplayPlayerQuarters();
                 break;
             case "SEMIS":
                 SetUISemis();
-                DisplayPlayerQuarters();
-                DisplayPlayerSemis();
                 break;
             case "FINALS":
                 SetUIFinals();
-                DisplayPlayerQuarters();
-                DisplayPlayerSemis();
-                DisplayPlayerFinals("FINALS");
                 break;
             case "END":
                 SetUIFinalsEnd();
-                DisplayPlayerQuarters();
-                DisplayPlayerSemis();
-                DisplayPlayerFinals("FINALS");
-                DisplayPlayerFinals("END");
                 break;
-        }
-    }
-
-    private void SetUIQuarters()
-    {
-        roundAnnouncer.text = CupDB.CupRounds.QUARTERS.ToString();
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Semis") || player.name.Contains("Finals"))
-            {
-                player.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().color = new Color(0, 0, 0);
-                player.GetChild(1).GetComponent<TextMeshProUGUI>().text = "???";
-            }
-        }
-    }
-
-    private void SetUISemis()
-    {
-        roundAnnouncer.text = CupDB.CupRounds.SEMIS.ToString(); ;
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Finals"))
-            {
-                player.GetChild(0).GetChild(0).GetChild(0).GetComponent<Image>().color = new Color(0, 0, 0);
-                player.GetChild(1).GetComponent<TextMeshProUGUI>().text = "???";
-            }
-        }
-    }
-
-    private void SetUIFinals()
-    {
-        roundAnnouncer.text = CupDB.CupRounds.FINALS.ToString();
-    }
-
-    private void SetUIFinalsEnd()
-    {
-        string winnerId = Cup.Instance.cupInfo[CupDB.CupRounds.FINALS.ToString()]["7"]["winner"];
-        string winnerName = "";
-        foreach (CupFighter fighter in Cup.Instance.participants)
-        {
-            if (fighter.id == winnerId)
-                winnerName = fighter.fighterName;
-        }
-
-        roundAnnouncer.text = "TOURNAMENT ENDED\n" + "WINNER " + winnerName + "!";
+        }*/
     }
 
     private void HideCupLabels()
@@ -332,119 +208,10 @@ public class CupUIManager : MonoBehaviour
         return labelContainer.GetChild(0);
     }
 
-    private void ShowCupLabel()
-    {
-        GetCupLabelByName(Cup.Instance.cupName).gameObject.SetActive(true);
-    }
 
     private Sprite GetSpeciePortrait(string species)
     {
         return Resources.Load<Sprite>("CharacterProfilePicture/" + species);
-    }
-
-    public void GrayOutLosersQuarters()
-    {
-        var participantsList = Cup.Instance.participants;
-        var cupInfo = Cup.Instance.cupInfo;
-        List<string> loserIds = new List<string>();
-        int counter = 5; // match ids + 1
-
-        for (int i = 1; i < counter; i++)
-            loserIds.Add(cupInfo[CupDB.CupRounds.QUARTERS.ToString()][i.ToString()]["loser"]);
-
-        counter = 0;
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Quarters"))
-            {
-                for (int i = 0; i < loserIds.Count; i++)
-                    if (participantsList[counter].id == loserIds[i])
-                        player.GetChild(2).GetComponent<Image>().enabled = true;
-
-                counter++;
-            }
-        }
-    }
-
-    public void GrayOutLosersSemis()
-    {
-        var participantsList = cupManager.GenerateParticipantsBasedOnQuarters();
-        var cupInfo = Cup.Instance.cupInfo;
-        List<string> loserIds = new List<string>();
-        int counter = 7; // match ids + 1
-
-        for (int i = 5; i < counter; i++)
-            loserIds.Add(cupInfo[CupDB.CupRounds.SEMIS.ToString()][i.ToString()]["loser"]);
-
-        counter = 0;
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Semis"))
-            {
-                for (int i = 0; i < loserIds.Count; i++)
-                    if (participantsList[counter].id == loserIds[i])
-                        player.GetChild(2).GetComponent<Image>().enabled = true;
-
-                counter++;
-            }
-        }
-    }
-
-    public void GrayOutLoserFinals()
-    {
-        var participantsList = cupManager.GenerateParticipantsBasedOnSemis();
-        var cupInfo = Cup.Instance.cupInfo;
-        List<string> loserIds = new List<string>();
-        int counter = 7; // match ids + 1 
-
-        loserIds.Add(cupInfo[CupDB.CupRounds.FINALS.ToString()][counter.ToString()]["loser"]);
-
-        counter = 0;
-
-        foreach (Transform player in participants)
-        {
-            if (player.name.Contains("Finals"))
-            {
-                for (int i = 0; i < loserIds.Count; i++)
-                    if (participantsList[counter].id == loserIds[i])
-                        player.GetChild(2).GetComponent<Image>().enabled = true;
-
-                counter++;
-            }
-        }
-    }
-
-    private string GetPlayerFinalResult()
-    {
-        if (Cup.Instance.cupInfo[CupDB.CupRounds.QUARTERS.ToString()]["1"]["winner"] == "0")
-        {
-            if (Cup.Instance.cupInfo[CupDB.CupRounds.SEMIS.ToString()]["5"]["winner"] == "0")
-            {
-                if (Cup.Instance.cupInfo[CupDB.CupRounds.FINALS.ToString()]["7"]["winner"] == "0")
-                {
-                    return CupDB.CupRounds.FINALS.ToString();
-                }
-                else
-                {
-                    return CupDB.CupRounds.QUARTERS.ToString();
-                }
-            } else
-            {
-                return CupDB.CupRounds.SEMIS.ToString();
-            }
-        } 
-        else
-        {
-            return CupDB.CupRounds.ZERO.ToString();
-        }
-    }
-
-    // Prizes logic
-    private string GetCupRound()
-    {
-        return GetPlayerFinalResult();
     }
 
     private Dictionary<string, string> GetRewardType(string round)

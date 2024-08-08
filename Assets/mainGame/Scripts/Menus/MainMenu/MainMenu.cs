@@ -3,8 +3,10 @@ using UnityEngine.UI;
 using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class MainMenu : MonoBehaviour
+public class MainMenu : MonoBehaviourPunCallbacks
 {
     // UI
     public GameObject playerEloGO;
@@ -90,23 +92,6 @@ public class MainMenu : MonoBehaviour
        
     }
 
-
-    public void UpdateStatsUI()
-    {
-        fighterInstance.IncreaseDamagePerClick(50);
-    }
-
- 
-
-
-    public void SetBattleButton()
-    {
-        bool userHasEnergy = User.Instance.energy > 0;
-        battleButtonGO.GetComponent<Button>().enabled = userHasEnergy;
-        lockIcon.enabled = !userHasEnergy;
-        battleEnergyIcon.SetActive(!userHasEnergy);
-        battleSwordIcon.SetActive(userHasEnergy);
-    }
     IEnumerator Start()
     {
         if (SceneFlag.sceneName == SceneNames.EntryPoint.ToString() ||
@@ -146,7 +131,59 @@ public class MainMenu : MonoBehaviour
         while (true);
     }
 
+    #region UI
 
+    public void UpdateStatsUI()
+    {
+        fighterInstance.IncreaseDamagePerClick(50);
+    }
+
+    public void SetBattleButton()
+    {
+        bool userHasEnergy = User.Instance.energy > 0;
+        battleButtonGO.GetComponent<Button>().enabled = userHasEnergy;
+        lockIcon.enabled = !userHasEnergy;
+        battleEnergyIcon.SetActive(!userHasEnergy);
+        battleSwordIcon.SetActive(userHasEnergy);
+    }
+
+    public void JoinTournament()
+    {
+        PhotonNetwork.JoinLobby();
+    }
+
+    public override void OnJoinedLobby()
+    {
+        Debug.Log("Player " + PhotonNetwork.LocalPlayer.NickName + " has joined the lobby.");
+        PhotonNetwork.AutomaticallySyncScene = true;
+        PhotonNetwork.JoinRandomRoom(null, 8);
+    }
+
+    void CreateRoom(int maxPlayers)
+    {
+        int roomNum = Random.Range(1, 1000);
+        RoomOptions roomOptions = new RoomOptions() { IsOpen = true, IsVisible = true, PublishUserId = true, MaxPlayers = maxPlayers};
+        PhotonNetwork.CreateRoom("Room" + roomNum, roomOptions);
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        Debug.Log("Player " + PhotonNetwork.LocalPlayer.NickName + " failed to join a room.");
+        CreateRoom(8); //Creating room for bracket cup
+    }
+
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+        //Usually, failing to create a room means there is already a room with the same name.
+        Debug.Log("Failed to create a room: " + message);
+        CreateRoom(8); //Creating room for bracket cup
+    }
+
+    public override void OnJoinedRoom()
+    {
+        Debug.Log("Player " + PhotonNetwork.LocalPlayer.NickName + " has joined the room " + PhotonNetwork.CurrentRoom.Name);
+        PhotonNetwork.LoadLevel("Cup");
+    }
 
     // on settings button
     public void OpenSettings()
@@ -178,6 +215,9 @@ public class MainMenu : MonoBehaviour
     {
         StartCoroutine(ShowCredits());
     }
+    #endregion
+
+
 
     public IEnumerator ShowCredits()
     {

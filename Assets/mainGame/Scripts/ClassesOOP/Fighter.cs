@@ -5,7 +5,6 @@ using System;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
-using UnityEngine;
 using Photon.Pun.Demo.Asteroids;
 
 // MonoBehaviours are scripts that are attached to an object in the scene, and run in the scene as long as the object they are attached to is active.

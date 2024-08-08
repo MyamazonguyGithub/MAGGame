@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class SceneManagerScript : MonoBehaviour
 {
+    public CanvasGroup fadeCanvasGroup;
     // instance
     public static SceneManagerScript instance;
 
-    private CanvasGroup fadeCanvasGroup;
     public const float FADE_DURATION = SceneFlag.FADE_DURATION;
     public const float FADE_INCREMENT = 0.04f;
     public const float ANIMATION_SPEED = 2f;
@@ -24,9 +24,6 @@ public class SceneManagerScript : MonoBehaviour
         }   
 
         DontDestroyOnLoad(gameObject);
-
-        // components
-        fadeCanvasGroup = GameObject.Find("FadeCanvas").GetComponent<CanvasGroup>();
     }
 
     private void Start()

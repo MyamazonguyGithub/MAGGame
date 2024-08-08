@@ -10,11 +10,11 @@ public static class MatchMaking
 
     public static void GenerateCupBotData(Fighter player, Fighter bot)
     {
-        CupFighter cupBot = GetCupBotData();
-        string botName = cupBot.fighterName;
-        SpeciesNames botSpecies = (SpeciesNames)Enum.Parse(typeof(SpeciesNames), cupBot.species);
+        //CupFighter cupBot = GetCupBotData();
+        //string botName = cupBot.fighterName;
+        //SpeciesNames botSpecies = (SpeciesNames)Enum.Parse(typeof(SpeciesNames));
 
-        GenerateBotData(player, bot, botName, botSpecies);
+        //GenerateBotData(player, bot, botName, botSpecies);
     }
 
     public static void GenerateSoloQBotData(Fighter player, Fighter bot)
@@ -85,7 +85,7 @@ public static class MatchMaking
         return botSkills;
     }
 
-    private static CupFighter GetCupBotData()
+    /*private static CupFighter GetCupBotData()
     {
         string cupBotId = "";
         int counter = 0;
@@ -107,7 +107,7 @@ public static class MatchMaking
 
         Debug.Log("Couldn't get fighter!");
         return new CupFighter("", "", "");
-    }
+    }*/
 
     private static Dictionary<string, float> GenerateBotRandomStats(SpeciesNames randomSpecies)
     {
